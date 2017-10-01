@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LALR-Parser", "Sources\LALR-Parser.vcxproj", "{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Debug|x64.ActiveCfg = Debug|x64
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Debug|x64.Build.0 = Debug|x64
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Debug|x86.ActiveCfg = Debug|Win32
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Debug|x86.Build.0 = Debug|Win32
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Release|x64.ActiveCfg = Release|x64
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Release|x64.Build.0 = Release|x64
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Release|x86.ActiveCfg = Release|Win32
+		{438B03E1-6EE1-4AEE-8D43-E4ECF9AC1980}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {84EB76AB-2768-442F-ADDA-977D4410064E}
+	EndGlobalSection
+EndGlobal
