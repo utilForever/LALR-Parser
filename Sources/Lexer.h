@@ -129,25 +129,25 @@ struct Token
 	}
 
 	// Interface for accessing internal data
-	char GetChVal()
+	char GetChVal() const
 	{
 		assert(token == TokenType::CHAR);
 		return val.chVal;
 	}
 
-	int GetNumVal()
+	int GetNumVal() const
 	{
 		assert(token == TokenType::NUM_INT);
 		return val.numVal;
 	}
 
-	char* GetStrVal()
+	char* GetStrVal() const
 	{
 		assert(token == TokenType::STRING_LITERAL);
 		return val.strVal;
 	}
 
-	double GetFpVal()
+	double GetFpVal() const
 	{
 		assert(token == TokenType::NUM_DOUBLE);
 		return val.fpVal;
