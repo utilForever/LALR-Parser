@@ -9,5 +9,13 @@
     <ClInclude Include="Lexer.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
