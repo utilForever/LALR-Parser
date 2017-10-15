@@ -2,6 +2,7 @@
 #define LEXER_H
 
 #include <cassert>
+#include <fstream>
 
 enum class Symbol
 {
@@ -158,6 +159,117 @@ struct Token
 		char* strVal;
 		double fpVal;
 	} val;
+};
+
+class Lexer
+{
+public:
+	explicit Lexer(std::ifstream f);
+	virtual ~Lexer();
+	Lexer(const Lexer&) = delete;
+	Lexer(Lexer&&) = delete;
+	Lexer& operator=(const Lexer&) = delete;
+	Lexer& operator=(Lexer&&) = delete;
+
+	virtual Token* GetToken();
+
+	int GetLineNumber() const
+	{
+		return m_lineNumber;
+	}
+
+protected:
+	class CommentDFA
+	{
+	public:
+		explicit CommentDFA(Lexer& lexer) : m_lexer(lexer)
+		{
+			
+		}
+
+		void GetToken(Token* token);
+
+	private:
+		Lexer& m_lexer;
+	};
+
+	class StringDFA
+	{
+	public:
+		explicit StringDFA(Lexer& lexer) : m_lexer(lexer)
+		{
+			
+		}
+
+		void GetToken(Token* token);
+
+	private:
+		Lexer& m_lexer;
+
+		static int m_strMaxLength;
+	};
+
+	class CharDFA
+	{
+	public:
+		explicit CharDFA(Lexer& lexer) : m_lexer(lexer)
+		{
+			
+		}
+
+		void GetToken(Token* token);
+
+	private:
+		Lexer& m_lexer;
+
+		static int m_charSeqMaxLength;
+		static char m_reservedEscSeq[10];
+	};
+	
+	class NumDFA
+	{
+	public:
+		explicit NumDFA(Lexer& lexer) : m_lexer(lexer)
+		{
+			
+		}
+
+		void GetToken(Token* token);
+
+	private:
+		Lexer& m_lexer;
+
+		static int m_wordLength;
+		static unsigned int m_bufferMaxSize;
+	};
+
+	class IDDFA
+	{
+	public:
+		explicit IDDFA(Lexer& lexer) : m_lexer(lexer)
+		{
+			
+		}
+
+	private:
+		Lexer& m_lexer;
+		
+		static int m_idMaxLength;
+		static const char* m_keywords[];
+	};
+
+private:
+	std::ifstream m_sourceFile;
+	char* m_lineBuffer;
+	char* m_lineBufferTail;
+
+	char* m_tokenHead;
+	char* m_tokenIter;
+
+	static int m_lineBufferSize;
+	static unsigned int m_tokenMaxLength;
+
+	int m_lineNumber;
 };
 
 #endif
