@@ -1,6 +1,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "Utils.h"
+
 #include <cassert>
 #include <fstream>
 
@@ -248,11 +250,19 @@ protected:
 	public:
 		explicit IDDFA(Lexer& lexer) : m_lexer(lexer)
 		{
-			
+			m_hashKeywords.Build(m_keywords);
+		}
+
+		void GetToken(Token* token);
+
+		const char* GetKeyword(const char* str)
+		{
+			return m_hashKeywords.Match(str);
 		}
 
 	private:
 		Lexer& m_lexer;
+		HashingTab m_hashKeywords;
 		
 		static int m_idMaxLength;
 		static const char* m_keywords[];
