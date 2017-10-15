@@ -8,12 +8,13 @@
 
 enum class Symbol
 {
-	LETTER,
-	BLANK,
-	DIGIT,
-	OTHER,
-	NEWLINE,
-	INDICATOR
+	UNDEFINED	= 00,
+	LETTER		= 01,
+	BLANK		= 02,
+	DIGIT		= 04,
+	OTHER		= 010,
+	NEWLINE		= 020,
+	INDICATOR	= 040
 };
 
 enum class TokenType
@@ -166,7 +167,7 @@ struct Token
 class Lexer
 {
 public:
-	explicit Lexer(std::ifstream f);
+	explicit Lexer(const char* fileName);
 	virtual ~Lexer();
 	Lexer(const Lexer&) = delete;
 	Lexer(Lexer&&) = delete;
@@ -228,10 +229,10 @@ protected:
 		static char m_reservedEscSeq[10];
 	};
 	
-	class NumDFA
+	class NumericsDFA
 	{
 	public:
-		explicit NumDFA(Lexer& lexer) : m_lexer(lexer)
+		explicit NumericsDFA(Lexer& lexer) : m_lexer(lexer)
 		{
 			
 		}
@@ -245,10 +246,10 @@ protected:
 		static unsigned int m_bufferMaxSize;
 	};
 
-	class IDDFA
+	class IdentifierDFA
 	{
 	public:
-		explicit IDDFA(Lexer& lexer) : m_lexer(lexer)
+		explicit IdentifierDFA(Lexer& lexer) : m_lexer(lexer)
 		{
 			m_hashKeywords.Build(m_keywords);
 		}
@@ -267,6 +268,12 @@ protected:
 		static int m_idMaxLength;
 		static const char* m_keywords[];
 	};
+
+	IdentifierDFA m_identifierDFA;
+	NumericsDFA m_numericsDFA;
+	CharDFA m_charDFA;
+	StringDFA m_stringDFA;
+	CommentDFA m_commentDFA;
 
 private:
 	std::ifstream m_sourceFile;
