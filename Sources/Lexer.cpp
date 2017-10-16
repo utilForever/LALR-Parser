@@ -136,6 +136,31 @@ std::array<Symbol, 256> CHAR_TO_SYMBOL_MAP =
 int Lexer::m_lineBufferSize = 2049;
 unsigned int Lexer::m_tokenMaxLength = 32;
 
+#define COMPLEX_OPERATOR_DFA(ch1stSymbol, ch2ndSymbol, singleOperator, complexOperator)	\
+{\
+	if (*m_tokenIter == ch1stSymbol)	\
+	{	\
+		++m_tokenIter;	\
+		if (*m_tokenIter == ch2ndSymbol)	\
+		{	\
+			token->token = complexOperator;	\
+			++m_tokenIter;	\
+		}	\
+		else\
+		{	\
+			if (CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenHead)] == Symbol::INDICATOR)	\
+			{	\
+				token->token = TokenType::ERROR;	\
+			}	\
+			else\
+			{	\
+				token->token = singleOperator;	\
+			} \
+        }	\
+		goto EXIT_FUNC; \
+	}\
+}
+
 Lexer::Lexer(const char* fileName) :
 	m_identifierDFA(*this), m_numericsDFA(*this),
 	m_charDFA(*this), m_stringDFA(*this), m_commentDFA(*this),
@@ -194,7 +219,79 @@ CHECK:
 
 	if (+(symbol & Symbol::LETTER))
 	{
-		
+		m_identifierDFA.GetToken(token);
+		goto EXIT_FUNC;
+	}
+
+	if (+(symbol & Symbol::DIGIT))
+	{
+		m_numericsDFA.GetToken(token);
+		goto EXIT_FUNC;
+	}
+
+	if (*m_tokenIter == '\'')
+	{
+		m_charDFA.GetToken(token);
+		goto EXIT_FUNC;
+	}
+
+	if (*m_tokenIter == '"')
+	{
+		m_stringDFA.GetToken(token);
+		goto EXIT_FUNC;
+	}
+
+	if (*m_tokenIter == '/')
+	{
+		++m_tokenIter;
+
+		if (*m_tokenIter == '/' || *m_tokenIter == '*')
+		{
+			m_commentDFA.GetToken(token);
+		}
+		else
+		{
+			token->token = TokenType::OP_DIV;
+		}
+
+		goto EXIT_FUNC;
+	}
+
+	COMPLEX_OPERATOR_DFA('=', '=', TokenType::OP_ASSIGN, TokenType::OP_EQUAL);
+	COMPLEX_OPERATOR_DFA('!', '=', TokenType::OP_NOT, TokenType::OP_NOTEQUAL);
+	COMPLEX_OPERATOR_DFA('>', '=', TokenType::OP_GREATERTHAN, TokenType::OP_GREATERTHANEQUAL);
+	COMPLEX_OPERATOR_DFA('<', '=', TokenType::OP_LESSTHAN, TokenType::OP_LESSTHANEQUAL);
+	COMPLEX_OPERATOR_DFA('&', '&', TokenType::ERROR, TokenType::OP_AND);
+	COMPLEX_OPERATOR_DFA('|', '|', TokenType::ERROR, TokenType::OP_OR);
+
+	if (+(symbol & (Symbol::OTHER | Symbol::INDICATOR)))
+	{
+		assert(
+			*m_tokenIter != '!' && *m_tokenIter != '&'  && *m_tokenIter != '|' &&
+			*m_tokenIter != '>' && *m_tokenIter != '<'  && *m_tokenIter != '=' &&
+			*m_tokenIter != '/' && *m_tokenIter != '\'' && *m_tokenIter != '"');
+
+		switch (*m_tokenIter)
+		{
+		case '%':	token->token = TokenType::OP_MOD;	break;
+		case '(':	token->token = TokenType::PUNCT_LPAREN;	break;
+		case ')':	token->token = TokenType::PUNCT_RPAREN;	break;
+		case '*':	token->token = TokenType::OP_MUL;	break;
+		case '+':	token->token = TokenType::OP_ADD;	break;
+		case '-':	token->token = TokenType::OP_SUB;	break;
+		case ',':	token->token = TokenType::PUNCT_COMMA;	break;
+		case ':':	token->token = TokenType::PUNCT_COLON;  break;
+		case ';':	token->token = TokenType::PUNCT_SEMICOLON; break;
+		case '[':	token->token = TokenType::PUNCT_LBRACK;	break;
+		case ']':	token->token = TokenType::PUNCT_RBRACK;	break;
+		case '{':	token->token = TokenType::PUNCT_LBRACE;	break;
+		case '}':	token->token = TokenType::PUNCT_RBRACE;	break;
+		default:	break;
+		}
+
+		++m_tokenIter;
+
+		goto EXIT_FUNC;
 	}
 
 EXIT_FUNC:
