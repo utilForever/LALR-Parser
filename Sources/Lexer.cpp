@@ -179,7 +179,7 @@ CHECK:
 		}
 	}
 
-	while ((static_cast<int>(Symbol::BLANK) | static_cast<int>(Symbol::NEWLINE)) & static_cast<int>(CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)]))
+	while (+((Symbol::BLANK | Symbol::NEWLINE) & CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)]))
 	{
 		++m_tokenIter;
 	}
@@ -192,7 +192,7 @@ CHECK:
 
 	Symbol symbol = CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)];
 
-	if (symbol & Symbol::LETTER)
+	if (+(symbol & Symbol::LETTER))
 	{
 		
 	}

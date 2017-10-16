@@ -6,7 +6,7 @@
 #include <cassert>
 #include <fstream>
 
-enum class Symbol
+enum class Symbol : int
 {
 	UNDEFINED	= 00,
 	LETTER		= 01,
@@ -16,6 +16,35 @@ enum class Symbol
 	NEWLINE		= 020,
 	INDICATOR	= 040
 };
+
+using SymbolType = std::underlying_type_t<Symbol>;
+
+inline int operator+(const Symbol& symbol)
+{
+	return static_cast<int>(symbol);
+}
+
+inline Symbol operator&(Symbol lhs, Symbol rhs)
+{
+	return static_cast<Symbol>(static_cast<SymbolType>(lhs) & static_cast<SymbolType>(rhs));
+}
+
+inline Symbol& operator&=(Symbol& lhs, Symbol rhs)
+{
+	lhs = static_cast<Symbol>(static_cast<SymbolType>(lhs) & static_cast<SymbolType>(rhs));
+	return lhs;
+}
+
+inline Symbol operator|(Symbol lhs, Symbol rhs)
+{
+	return static_cast<Symbol>(static_cast<SymbolType>(lhs) | static_cast<SymbolType>(rhs));
+}
+
+inline Symbol& operator|=(Symbol& lhs, Symbol rhs)
+{
+	lhs = static_cast<Symbol>(static_cast<SymbolType>(lhs) | static_cast<SymbolType>(rhs));
+	return lhs;
+}
 
 enum class TokenType
 {
