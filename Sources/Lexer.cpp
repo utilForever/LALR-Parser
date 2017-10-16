@@ -284,6 +284,61 @@ void Lexer::IdentifierDFA::GetToken(Token* token)
 	}
 }
 
+int Lexer::NumericsDFA::m_wordLength = 16;
+unsigned int Lexer::NumericsDFA::m_bufferMaxSize = 32;
+
+void Lexer::NumericsDFA::GetToken(Token* token)
+{
+	unsigned int charCount = 0;
+
+	while (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*++m_lexer.m_tokenIter)] & Symbol::DIGIT))
+	{
+		// Do nothing	
+	}
+
+	if (*m_lexer.m_tokenIter == '.' || *m_lexer.m_tokenIter == 'E')
+	{
+		// Floating-point or exponent part
+	}
+	else
+	{
+		if (CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_lexer.m_tokenIter)] == Symbol::LETTER)
+		{
+			token->token = TokenType::ERROR;
+
+			// TODO: Report the error
+		}
+		else
+		{
+			token->token = TokenType::NUM_INT;
+		}
+
+		goto EXIT_FUNC;
+	}
+
+
+	// TODO: Implement Exponent part
+
+EXIT_FUNC:
+	if (token->token == TokenType::NUM_INT || token->token == TokenType::NUM_DOUBLE)
+	{
+		charCount = m_lexer.m_tokenIter - m_lexer.m_tokenHead;
+
+		if (charCount > m_bufferMaxSize)
+		{
+			token->token = TokenType::ERROR;
+
+			// TODO: Report the error
+		}
+		else
+		{
+			token->val.strVal = new char[charCount + 1];
+			memset(token->val.strVal, 0, charCount + 1);
+			strncpy_s(token->val.strVal, charCount, m_lexer.m_tokenHead, charCount);
+		}
+	}
+}
+
 Lexer::Lexer(const char* fileName) :
 	m_identifierDFA(*this), m_numericsDFA(*this),
 	m_charDFA(*this), m_stringDFA(*this), m_commentDFA(*this),
