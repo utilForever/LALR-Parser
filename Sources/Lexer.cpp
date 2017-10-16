@@ -151,6 +151,7 @@ unsigned int Lexer::m_tokenMaxLength = 32;
 			if (CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenHead)] == Symbol::INDICATOR)	\
 			{	\
 				token->token = TokenType::ERROR;	\
+				/* TODO: Report the error */	\
 			}	\
 			else\
 			{	\
@@ -159,6 +160,128 @@ unsigned int Lexer::m_tokenMaxLength = 32;
         }	\
 		goto EXIT_FUNC; \
 	}\
+}
+
+int Lexer::IdentifierDFA::m_idMaxLength = 32;
+const char* Lexer::IdentifierDFA::m_keywords[] =
+{
+	"if",
+	"else",
+	"for",
+	"while",
+	"return",
+	"continue",
+	"break",
+	"char",
+	"goto",
+	"int",
+	"double",
+	"void",
+	"read",
+	"write",
+	nullptr
+};
+
+void Lexer::IdentifierDFA::GetToken(Token* token)
+{
+	while (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*++m_lexer.m_tokenIter)] & (Symbol::DIGIT | Symbol::LETTER)))
+	{
+		// Do nothing	
+	}
+
+	if ((m_lexer.m_tokenIter - m_lexer.m_tokenHead) / sizeof(char) > m_tokenMaxLength)
+	{
+		token->token = TokenType::ERROR;
+
+		// TODO: Report the error
+	}
+	else
+	{
+		assert(m_lexer.m_tokenIter > m_lexer.m_tokenHead);
+
+		const char temp = *m_lexer.m_tokenIter;
+		*m_lexer.m_tokenIter = '\0';
+
+		const char * keyword = GetKeyword(m_lexer.m_tokenHead);
+
+		*m_lexer.m_tokenIter = temp;
+
+		if (keyword != nullptr)
+		{
+			switch (*keyword)
+			{
+			case 'b':
+				token->token = TokenType::KEYWORD_BREAK;
+				break;
+			case 'c':
+				if (*++keyword == 'h')
+				{
+					token->token = TokenType::KEYWORD_CHAR;
+				}
+				else
+				{
+					token->token = TokenType::KEYWORD_CONTINUE;
+				}
+				break;
+			case 'd':
+				token->token = TokenType::KEYWORD_DOUBLE;
+				break;
+			case 'e':
+				token->token = TokenType::KEYWORD_ELSE;
+				break;
+			case 'f':
+				token->token = TokenType::KEYWORD_FOR;
+				break;
+			case 'g':
+				token->token = TokenType::KEYWORD_GOTO;
+				break;
+			case 'i':
+				if (*++keyword == 'f')
+				{
+					token->token = TokenType::KEYWORD_IF;
+				}
+				else
+				{
+					token->token = TokenType::KEYWORD_INT;
+				}
+				break;
+			case 'r':
+				if (keyword[2] == 'a')
+				{
+					token->token = TokenType::KEYWORD_READ;
+				}
+				else
+				{
+					token->token = TokenType::KEYWORD_RETURN;
+				}
+				break;
+			case 'v':
+				token->token = TokenType::KEYWORD_VOID;
+				break;
+			case 'w':
+				if (*++keyword == 'h')
+				{
+					token->token = TokenType::KEYWORD_WHILE;
+				}
+				else
+				{
+					token->token = TokenType::KEYWORD_WRITE;
+				}
+				break;
+			default:
+				assert(nullptr);
+				token->token = TokenType::ERROR;
+				// TODO: Report the error
+			}
+		}
+		else
+		{
+			token->token = TokenType::ID;
+			token->val.strVal = new char[m_lexer.m_tokenIter - m_lexer.m_tokenHead + 1];
+			memset(token->val.strVal, 0, m_lexer.m_tokenIter - m_lexer.m_tokenHead + 1);
+			strncpy_s(token->val.strVal, m_lexer.m_tokenIter - m_lexer.m_tokenHead, m_lexer.m_tokenHead, m_lexer.m_tokenIter - m_lexer.m_tokenHead);
+		}
+	}
 }
 
 Lexer::Lexer(const char* fileName) :
@@ -204,7 +327,7 @@ CHECK:
 		}
 	}
 
-	while (+((Symbol::BLANK | Symbol::NEWLINE) & CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)]))
+	while (+((CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)] & Symbol::BLANK | Symbol::NEWLINE)))
 	{
 		++m_tokenIter;
 	}
@@ -215,7 +338,7 @@ CHECK:
 		goto CHECK;
 	}
 
-	Symbol symbol = CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)];
+	const Symbol symbol = CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)];
 
 	if (+(symbol & Symbol::LETTER))
 	{
