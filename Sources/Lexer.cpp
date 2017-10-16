@@ -294,6 +294,13 @@ CHECK:
 		goto EXIT_FUNC;
 	}
 
+	assert(CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)] == Symbol::UNDEFINED);
+
+	token->token = TokenType::ERROR;
+	++m_tokenIter;
+
+	// TODO: Report the error
+
 EXIT_FUNC:
 	if (*m_tokenIter == 0xa)
 	{
