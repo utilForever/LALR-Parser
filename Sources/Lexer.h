@@ -81,6 +81,9 @@ enum class TokenType
 	// String literal
 	STRING_LITERAL,
 
+	// End of file
+	END_OF_FILE,
+
 	// Undefined or error token
 	ERROR,
 

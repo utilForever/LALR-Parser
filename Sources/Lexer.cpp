@@ -152,3 +152,58 @@ Lexer::Lexer(const char* fileName) :
 
 	m_lineNumber = 1;
 }
+
+Lexer::~Lexer()
+{
+	delete m_lineBuffer;
+}
+
+Token* Lexer::GetToken()
+{
+	assert(m_tokenIter != nullptr);
+
+	Token* token = new Token();
+
+CHECK:
+	if (*m_tokenHead == '\0')
+	{
+		if (m_sourceFile.get(m_lineBuffer, m_lineBufferSize))
+		{
+			m_tokenIter = m_tokenHead = m_lineBuffer;
+			++m_lineNumber;
+		}
+		else
+		{
+			token->token = TokenType::END_OF_FILE;
+			goto EXIT_FUNC;
+		}
+	}
+
+	while ((static_cast<int>(Symbol::BLANK) | static_cast<int>(Symbol::NEWLINE)) & static_cast<int>(CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)]))
+	{
+		++m_tokenIter;
+	}
+	m_tokenHead = m_tokenIter;
+
+	if (*m_tokenIter == '\0')
+	{
+		goto CHECK;
+	}
+
+	Symbol symbol = CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_tokenIter)];
+
+	if (symbol & Symbol::LETTER)
+	{
+		
+	}
+
+EXIT_FUNC:
+	if (*m_tokenIter == 0xa)
+	{
+		++m_tokenIter;
+	}
+
+	m_tokenHead = m_tokenIter;
+
+	return token;
+}
