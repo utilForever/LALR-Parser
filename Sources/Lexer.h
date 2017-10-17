@@ -269,7 +269,7 @@ protected:
 			
 		}
 
-		void GetToken(Token* token);
+		void GetToken(Token* token) const;
 
 	private:
 		Lexer& m_lexer;

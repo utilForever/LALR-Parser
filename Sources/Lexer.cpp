@@ -287,7 +287,7 @@ void Lexer::IdentifierDFA::GetToken(Token* token)
 int Lexer::NumericsDFA::m_wordLength = 16;
 unsigned int Lexer::NumericsDFA::m_bufferMaxSize = 32;
 
-void Lexer::NumericsDFA::GetToken(Token* token)
+void Lexer::NumericsDFA::GetToken(Token* token) const
 {
 	unsigned int charCount = 0;
 
@@ -316,8 +316,64 @@ void Lexer::NumericsDFA::GetToken(Token* token)
 		goto EXIT_FUNC;
 	}
 
+	if (*m_lexer.m_tokenIter == '.')
+	{
+		while (CHAR_TO_SYMBOL_MAP[static_cast<int>(*++m_lexer.m_tokenIter)] == Symbol::DIGIT)
+		{
+			// Do nothing
+		}
 
-	// TODO: Implement Exponent part
+		if (*m_lexer.m_tokenIter == 'E')
+		{
+		EXP_PART:
+			if (*m_lexer.m_tokenIter == '+' || *m_lexer.m_tokenIter == '-')
+			{
+				++m_lexer.m_tokenIter;
+			}
+
+			if (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*++m_lexer.m_tokenIter)] & Symbol::DIGIT))
+			{
+				while (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*++m_lexer.m_tokenIter)] & Symbol::DIGIT))
+				{
+					// Do nothing
+				}
+
+				if (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_lexer.m_tokenIter)] & Symbol::LETTER))
+				{
+					token->token = TokenType::ERROR;
+
+					// TODO: Report the error
+				}
+				else
+				{
+					token->token = TokenType::NUM_DOUBLE;
+				}
+			}
+			else
+			{
+				token->token = TokenType::ERROR;
+
+				// TODO: Report the error
+			}
+		}
+		else
+		{
+			if (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*m_lexer.m_tokenIter)] & Symbol::LETTER))
+			{
+				token->token = TokenType::ERROR;
+
+				// TODO: Report the error
+			}
+			else
+			{
+				token->token = TokenType::NUM_DOUBLE;
+			}
+		}
+	}
+	else if (*m_lexer.m_tokenIter == 'E')
+	{
+		goto EXP_PART;
+	}
 
 EXIT_FUNC:
 	if (token->token == TokenType::NUM_INT || token->token == TokenType::NUM_DOUBLE)
