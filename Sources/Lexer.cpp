@@ -289,8 +289,6 @@ unsigned int Lexer::NumericsDFA::m_bufferMaxSize = 32;
 
 void Lexer::NumericsDFA::GetToken(Token* token) const
 {
-	unsigned int charCount = 0;
-
 	while (+(CHAR_TO_SYMBOL_MAP[static_cast<int>(*++m_lexer.m_tokenIter)] & Symbol::DIGIT))
 	{
 		// Do nothing	
@@ -378,7 +376,7 @@ void Lexer::NumericsDFA::GetToken(Token* token) const
 EXIT_FUNC:
 	if (token->token == TokenType::NUM_INT || token->token == TokenType::NUM_DOUBLE)
 	{
-		charCount = m_lexer.m_tokenIter - m_lexer.m_tokenHead;
+		const unsigned int charCount = m_lexer.m_tokenIter - m_lexer.m_tokenHead;
 
 		if (charCount > m_bufferMaxSize)
 		{
@@ -392,6 +390,102 @@ EXIT_FUNC:
 			memset(token->val.strVal, 0, charCount + 1);
 			strncpy_s(token->val.strVal, charCount, m_lexer.m_tokenHead, charCount);
 		}
+	}
+}
+
+int Lexer::CharDFA::m_charSeqMaxLength = 4;
+char Lexer::CharDFA::m_reservedEscSeq[10] = { '\0' };
+
+void Lexer::CharDFA::GetToken(Token* token) const
+{
+	int charCount;
+
+	++m_lexer.m_tokenIter;
+
+	while (*m_lexer.m_tokenIter != '\'' && *m_lexer.m_tokenIter != '\0')
+	{
+		++m_lexer.m_tokenIter;
+	}
+
+	if (*m_lexer.m_tokenIter != '\'')
+	{
+		token->token = TokenType::ERROR;
+
+		// TODO: Report the error
+	}
+	else
+	{
+		charCount = (m_lexer.m_tokenIter - m_lexer.m_tokenHead - 1) / sizeof(char);
+		assert(charCount >= 0);
+
+		if (charCount == 0)
+		{
+			token->token = TokenType::ERROR;
+
+			// TODO: Report the error
+
+			goto EXIT_FUNC;
+		}
+
+		if (charCount > m_charSeqMaxLength)
+		{
+			token->token = TokenType::ERROR;
+
+			// TODO: Report the error
+
+			goto EXIT_FUNC;
+		}
+
+		if (m_lexer.m_tokenHead[1] == '\\')
+		{
+			if (charCount > 2)
+			{
+				token->token = TokenType::ERROR;
+
+				// TODO: Report the error
+
+				goto EXIT_FUNC;
+			}
+
+			if (charCount == 2)
+			{
+				switch (m_lexer.m_tokenHead[2])
+				{
+				case 'n':
+					token->token = TokenType::CHAR;
+					token->val.chVal = 0xa;
+					break;
+				case 'r':
+					token->token = TokenType::CHAR;
+					token->val.chVal = 0xd;
+					break;
+				case 't':
+					token->token = TokenType::CHAR;
+					token->val.chVal = 0x9;
+					break;
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9':
+					token->token = TokenType::CHAR;
+					token->val.chVal = 0x0;
+					break;
+				default:
+					token->token = TokenType::ERROR;
+
+					// TODO: Report the error
+				}
+
+				goto EXIT_FUNC;
+			}
+		}
+
+		token->token = TokenType::CHAR;
+		token->val.chVal = m_lexer.m_tokenHead[1];
+	}
+
+EXIT_FUNC:
+	if (*m_lexer.m_tokenIter == '\'')
+	{
+		++m_lexer.m_tokenIter;
 	}
 }
 
