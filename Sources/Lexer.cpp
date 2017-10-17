@@ -529,6 +529,78 @@ void Lexer::StringDFA::GetToken(Token* token) const
 	}
 }
 
+void Lexer::CommentDFA::GetToken(Token* token) const
+{
+	bool isExitComment = false;
+	bool isReadNewLine = false;
+
+	if (*m_lexer.m_tokenIter == '/')
+	{
+		while (*++m_lexer.m_tokenIter != '\0')
+		{
+			// Do nothing;
+		}
+
+		token->token = TokenType::UNKNOWN;
+	}
+	else if (*m_lexer.m_tokenIter == '*')
+	{
+		while (true)
+		{
+			if (!isReadNewLine)
+			{
+				++m_lexer.m_tokenIter;
+			}
+			else
+			{
+				isReadNewLine = false;
+			}
+
+			if (*m_lexer.m_tokenIter == '*')
+			{
+				isExitComment = true;
+			}
+			else if (*m_lexer.m_tokenIter == '\0')
+			{
+				memset(m_lexer.m_lineBuffer, 0, m_lineBufferSize);
+				if (m_lexer.m_sourceFile.get(m_lexer.m_lineBuffer, m_lineBufferSize))
+				{
+					m_lexer.m_tokenIter = m_lexer.m_lineBuffer;
+					++m_lexer.m_lineNumber;
+				}
+				else
+				{
+					token->token = TokenType::ERROR;
+
+					// TODO: Report the error
+
+					break;
+				}
+
+				isReadNewLine = true;
+				isExitComment = false;
+			}
+			else if (*m_lexer.m_tokenIter == '/')
+			{
+				if (isExitComment)
+				{
+					token->token = TokenType::UNKNOWN;
+
+					++m_lexer.m_tokenIter;
+
+					break;
+				}
+
+				isExitComment = false;
+			}
+			else
+			{
+				isExitComment = false;
+			}
+		}
+	}
+}
+
 Lexer::Lexer(const char* fileName) :
 	m_identifierDFA(*this), m_numericsDFA(*this),
 	m_charDFA(*this), m_stringDFA(*this), m_commentDFA(*this),
