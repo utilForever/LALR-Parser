@@ -489,6 +489,46 @@ EXIT_FUNC:
 	}
 }
 
+int Lexer::StringDFA::m_strMaxLength = 32;
+
+void Lexer::StringDFA::GetToken(Token* token) const
+{
+	int charCount;
+
+	++m_lexer.m_tokenIter;
+
+	while (*m_lexer.m_tokenIter != '"' && *m_lexer.m_tokenIter != '\0')
+	{
+		++m_lexer.m_tokenIter;
+	}
+
+	if (*m_lexer.m_tokenIter != '"')
+	{
+		token->token = TokenType::ERROR;
+
+		// TODO: Report the error
+	}
+	else
+	{
+		charCount = (m_lexer.m_tokenIter - m_lexer.m_tokenHead - 1) / sizeof(char);
+		assert(charCount >= 0);
+
+		if (charCount > m_strMaxLength)
+		{
+			token->token = TokenType::ERROR;
+
+			// TODO: Report the error
+		}
+		else
+		{
+			token->token = TokenType::STRING_LITERAL;
+			token->val.strVal = new char[charCount + 1];
+			memset(token->val.strVal, 0, charCount + 1);
+			strncpy_s(token->val.strVal, charCount, m_lexer.m_tokenHead + 1, charCount);
+		}
+	}
+}
+
 Lexer::Lexer(const char* fileName) :
 	m_identifierDFA(*this), m_numericsDFA(*this),
 	m_charDFA(*this), m_stringDFA(*this), m_commentDFA(*this),
